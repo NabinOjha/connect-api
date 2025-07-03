@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding: 20px 0;
+      }
+      .header h1 {
+        color: #333333;
+        margin: 0;
+      }
+      .content {
+        padding: 20px;
+        text-align: center;
+      }
+      .content p {
+        color: #666666;
+        line-height: 1.6;
+        margin: 0 0 20px;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #007bff;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+      .button:hover {
+        background-color: #0056b3;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        color: #999999;
+        font-size: 12px;
+      }
+      .token-link {
+        word-break: break-all;
+        overflow-wrap: break-word;
+        max-width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Email Verification</h1>
+      </div>
+      <div class="content">
+        <p>Hello,</p>
+        <p>
+          Please verify your email address to complete your registration. Click
+          the button below to continue:
+        </p>
+        <a href="<%= verifyUrl %>" class="button">Verify Email</a>
+        <p>
+          If the button doesn't work, you can copy and paste this link into your
+          browser:
+        </p>
+        <p>
+          <a href="<%= verifyUrl %>" class="token-link"><%= verifyUrl %></a>
+        </p>
+      </div>
+      <div class="footer">
+        <p>
+          This email was sent by <%= appName %>. If you didn't request this,
+          please ignore this email.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
