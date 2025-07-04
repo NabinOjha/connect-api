@@ -1,5 +1,7 @@
 import { z } from "zod/v4";
 
+export const UserRoleSchema = z.enum(["USER", "ADMIN", "CONTRACTOR"]);
+
 export const signUpSchema = z
   .object({
     name: z
@@ -17,10 +19,13 @@ export const signUpSchema = z
         "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       ),
     confirmPassword: z.string(),
+    verificationToken: z.string(),
+    role: UserRoleSchema.default("USER"),
+    verified: z.boolean(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
 
-  export type User = z.infer<typeof signUpSchema>
+export type User = z.infer<typeof signUpSchema>;

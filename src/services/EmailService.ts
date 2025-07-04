@@ -1,4 +1,3 @@
-import { error, info } from "console";
 import nodemailer, { Transporter } from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 
@@ -20,7 +19,7 @@ export class EmailService {
     });
   }
 
-  public async sendEmail(email: string, subject: string, html: string) {
+  public async sendEmail(email: string, subject: string, html: string = "") {
     await this.transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: email,

@@ -5,12 +5,14 @@ import {
   signIn,
   signOut,
   signUp,
+  verifySignUp,
   updatePassword,
 } from "../controllers/authController";
 
 const authRouter = express.Router();
 
 authRouter.post("/signup", signUp);
+authRouter.post("/verify", verifySignUp);
 authRouter.post("/signin", signIn);
 authRouter.delete("/signout", signOut);
 authRouter.post("/reset-password-link", sendResetPasswordLink);

@@ -2,7 +2,10 @@ import { z } from "zod/v4";
 import { AppError } from "../utils/AppError";
 
 export class ValidationService {
-  static validateSignUp(data: any, schema: any) {
+  static validateSignUp<T extends z.ZodType>(
+    data: unknown,
+    schema: T
+  ): z.infer<T> {
     const parseResult = schema.safeParse(data);
     if (!parseResult.success) {
       throw new AppError(z.treeifyError(parseResult.error).errors.join());

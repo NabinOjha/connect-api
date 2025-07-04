@@ -12,10 +12,16 @@ export class UserService {
     });
   }
 
+  static async findById(id: number) {
+    return await prismaClient.user.findUnique({
+      where: { id },
+    });
+  }
+
   static async create(userData: User) {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const data = _.omit(userData, ["confirmPassword"]);
-    
+
     return await prismaClient.user.create({
       data: {
         ...data,
@@ -29,5 +35,12 @@ export class UserService {
     if (user) {
       throw new AppError("User already exists", 400);
     }
+  }
+
+  static async update(id: number, data: Partial<User>) {
+    await prismaClient.user.update({
+      where: { id },
+      data,
+    });
   }
 }
