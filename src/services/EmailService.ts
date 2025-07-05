@@ -1,6 +1,10 @@
 import nodemailer, { Transporter } from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 
+export interface IEmailService {
+  sendEmail(email: string, subject: string, html: string): Promise<void>;
+}
+
 export class EmailService {
   private transporter: Transporter<
     SMTPTransport.SentMessageInfo,

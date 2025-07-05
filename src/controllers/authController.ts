@@ -5,7 +5,6 @@ import { Request, Response, NextFunction } from "express";
 import { asyncHandler } from "../factories/asyncHandler";
 import { ValidationService } from "../services/ValidationService";
 import { signUpSchema } from "../schemas/user.schema";
-import AuthService from "../services/AuthService";
 import { AppError } from "../utils/AppError";
 import { TokenService } from "../services/TokenService";
 import { Auth } from "../factories/Auth";
@@ -13,7 +12,7 @@ import { Auth } from "../factories/Auth";
 export const signUp = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const data = ValidationService.validateSignUp(req.body, signUpSchema);
-    let user = await UserService.existingUser(data.email);
+    let user = await UserService.findByEmail(data.email);
     const authService = Auth.create();
 
     if (user) {
@@ -35,7 +34,9 @@ export const verifySignUp = asyncHandler(
     const token = req.body.token;
     if (!token) throw new AppError("Token not present", 400);
 
-    const authToken = await AuthService.verifySignUp(token);
+    const authService = Auth.create();
+
+    const authToken = await authService.verifySignUp(token);
     const oneDay = 24 * 60 * 60 * 1000;
 
     res.cookie("job_connect_token", authToken, {

@@ -1,7 +1,14 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 
-import { ITokenService, JWTEXPIRY } from "./../interfaces/tokenService";
 import { AppError } from "../utils/AppError";
+
+export type JWTEXPIRY = "1d" | "1hr";
+
+export interface ITokenService {
+  generateToken(userId: number, expiresIn?: JWTEXPIRY): string;
+
+  verifyToken(token: string): JwtPayload | null;
+}
 
 export class TokenService implements ITokenService {
   private readonly jwtSecret: string;

@@ -1,4 +1,6 @@
-import { IUrlService } from "../interfaces/urlService";
+export interface IUrlService {
+  generateVerificationUrl(token: string): string;
+}
 
 export class UrlService implements IUrlService {
   private readonly baseUrl: string;

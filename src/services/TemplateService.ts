@@ -1,8 +1,10 @@
 import ejs from "ejs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { ITemplateService } from "../interfaces/templateService";
 import { AppError } from "../utils/AppError";
+export interface ITemplateService {
+  render(templateName: string, data: any): Promise<string>;
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

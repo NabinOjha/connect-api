@@ -29,11 +29,6 @@ export class UserService {
     });
   }
 
-  static async existingUser(email: string) {
-    const user = await this.findByEmail(email);
-    if (user) return user;
-  }
-
   static async update(id: number, data: Partial<User>) {
     await prismaClient.user.update({
       where: { id },

@@ -1,11 +1,11 @@
 import { AppError } from "../utils/AppError";
 import { UserService } from "./UserService";
 import { User } from "@prisma/client";
-import { TokenService } from "./TokenService";
-import { IUrlService } from "../interfaces/urlService";
-import { ITokenService } from "../interfaces/tokenService";
-import { IEmailService } from "../interfaces/emailService";
-import { ITemplateService } from "../interfaces/templateService";
+import { ITokenService } from "./TokenService";
+import { IUrlService } from "./UrlService";
+import { IEmailService } from "./EmailService";
+import { ITemplateService } from "./TemplateService";
+
 class AuthService {
   constructor(
     private urlService: IUrlService,
@@ -38,9 +38,8 @@ class AuthService {
     }
   }
 
-  static async verifySignUp(token: string) {
-    const tokenService = new TokenService();
-    const payload = tokenService.verifyToken(token);
+  async verifySignUp(token: string) {
+    const payload = this.tokenService.verifyToken(token);
     if (!payload) throw new AppError("Invalid token.", 401);
 
     const userId = payload.userId;
@@ -49,7 +48,7 @@ class AuthService {
       throw new AppError("User does not exist.", 401);
 
     await UserService.update(userId, { verified: true });
-    return tokenService.generateToken(userId, "1d");
+    return this.tokenService.generateToken(userId, "1d");
   }
 }
 
