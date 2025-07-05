@@ -7,22 +7,28 @@ import { ValidationService } from "../services/ValidationService";
 import { signUpSchema } from "../schemas/user.schema";
 import AuthService from "../services/AuthService";
 import { AppError } from "../utils/AppError";
+import { TokenService } from "../services/TokenService";
+import { Auth } from "../factories/Auth";
 
-export const signUp = asyncHandler(async (req: Request, res: Response) => {
-  const data = ValidationService.validateSignUp(req.body, signUpSchema);
+export const signUp = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const data = ValidationService.validateSignUp(req.body, signUpSchema);
+    let user = await UserService.existingUser(data.email);
+    const authService = Auth.create();
 
-  await UserService.checkIfExists(data.email);
-  const user = await UserService.create(data);
+    if (user) {
+      await authService.createNewTokenAndSendVerificationEmail(user);
+    } else {
+      user = await UserService.create(data);
+      await authService.createNewTokenAndSendVerificationEmail(user);
+    }
 
-  const token = AuthService.generateToken(user.id);
-  await UserService.update(user.id, { verificationToken: token });
-  await AuthService.sendVerificationEmail(user.email, token);
-
-  res.status(201).json({
-    message: "User created successfully",
-    userId: user.id,
-  });
-});
+    res.status(201).json({
+      message: "User created successfully",
+      userId: user.id,
+    });
+  }
+);
 
 export const verifySignUp = asyncHandler(
   async (req: Request, res: Response) => {
@@ -52,7 +58,8 @@ export const signIn = asyncHandler(
     const isMatch = await bcrypt.compare(req.body.password, user.password);
 
     if (isMatch) {
-      const token = AuthService.generateToken(user.id);
+      const tokenService = new TokenService();
+      const token = tokenService.generateToken(user.id);
       const oneDay = 24 * 60 * 60 * 1000;
 
       res.cookie("job_connect_token", token, {

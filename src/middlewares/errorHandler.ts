@@ -6,19 +6,20 @@ export const errorHandler = (
   _req: Request,
   res: Response,
   _next: NextFunction
-) => {
+): void => {
   const isDevelopment = process.env.NODE_ENV === "development";
 
   if (error instanceof AppError) {
-    return res.status(error.statusCode).json({
-      message: error.message,
+    const errorJSON = error.toJSON();
+
+    res.status(errorJSON.statusCode).json({
+      message: errorJSON.message,
       ...(isDevelopment && { stack: error.stack }),
     });
+    return;
   }
 
-  console.error("*****************Unexpected Error*********************", error);
-
-  return res.status(500).json({
+  res.status(500).json({
     message: "Something went wrong",
     ...(isDevelopment && { originalError: error, stack: error.stack }),
   });

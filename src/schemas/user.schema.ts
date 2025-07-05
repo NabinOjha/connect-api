@@ -19,9 +19,9 @@ export const signUpSchema = z
         "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       ),
     confirmPassword: z.string(),
-    verificationToken: z.string(),
+    verificationToken: z.string().optional(),
     role: UserRoleSchema.default("USER"),
-    verified: z.boolean(),
+    verified: z.boolean().default(false),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",

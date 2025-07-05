@@ -1,63 +1,46 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
-import path from "path";
-import ejs from "ejs";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-import { EmailService } from "./EmailService";
 import { AppError } from "../utils/AppError";
 import { UserService } from "./UserService";
-
-type JWTEXPIRY = "1d" | "1hr";
+import { User } from "@prisma/client";
+import { TokenService } from "./TokenService";
+import { IUrlService } from "../interfaces/urlService";
+import { ITokenService } from "../interfaces/tokenService";
+import { IEmailService } from "../interfaces/emailService";
+import { ITemplateService } from "../interfaces/templateService";
 class AuthService {
-  static generateToken(userId: number, expiresIn: JWTEXPIRY = "1hr") {
-    return jwt.sign({ userId }, process.env.JWT_SECRET!, {
-      expiresIn: expiresIn,
-    });
+  constructor(
+    private urlService: IUrlService,
+    private tokenService: ITokenService,
+    private emailService: IEmailService,
+    private templateService: ITemplateService
+  ) {}
+
+  async createNewTokenAndSendVerificationEmail(user: User): Promise<void> {
+    const token = this.tokenService.generateToken(user.id);
+    await UserService.update(user.id, { verificationToken: token });
+    await this.sendVerificationEmail(user.email, token);
   }
 
-  static generateVerificationUrl(token: string) {
-    return `${process.env.APP_URL}/auth/verify/${token}`;
-  }
-
-  static async sendVerificationEmail(email: string, token: string) {
+  async sendVerificationEmail(email: string, token: string) {
     try {
-      const verifyUrl = this.generateVerificationUrl(token);
-
-      const templatePath = path.join(
-        __dirname,
-        "..",
-        "views",
-        "verificationEmail.ejs"
-      );
-      const html = await ejs.renderFile(templatePath, {
+      const verifyUrl = this.urlService.generateVerificationUrl(token);
+      const html = await this.templateService.render("verificationEmail.ejs", {
         verifyUrl,
         appName: process.env.APP_NAME || "Job Connect",
       });
-      const emailService = new EmailService();
-      await emailService.sendEmail(email, "Verify your email address", html);
+
+      await this.emailService.sendEmail(
+        email,
+        "Verify your email address",
+        html
+      );
     } catch (err) {
       throw new AppError("Error while sending email");
     }
   }
 
-  static decodeToken(token: string) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!, {
-        complete: false,
-      }) as JwtPayload;
-
-      return decoded;
-    } catch (err) {
-      console.error("Invalid token", err);
-      return false;
-    }
-  }
-
   static async verifySignUp(token: string) {
-    const payload = this.decodeToken(token);
+    const tokenService = new TokenService();
+    const payload = tokenService.verifyToken(token);
     if (!payload) throw new AppError("Invalid token.", 401);
 
     const userId = payload.userId;
@@ -66,7 +49,7 @@ class AuthService {
       throw new AppError("User does not exist.", 401);
 
     await UserService.update(userId, { verified: true });
-    return AuthService.generateToken(userId, "1d");
+    return tokenService.generateToken(userId, "1d");
   }
 }
 

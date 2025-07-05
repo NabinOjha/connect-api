@@ -3,7 +3,6 @@ import _ from "lodash";
 
 import bcrypt from "bcrypt";
 import prismaClient from "../prisma/client";
-import { AppError } from "../utils/AppError";
 
 export class UserService {
   static async findByEmail(email: string) {
@@ -30,11 +29,9 @@ export class UserService {
     });
   }
 
-  static async checkIfExists(email: string) {
+  static async existingUser(email: string) {
     const user = await this.findByEmail(email);
-    if (user) {
-      throw new AppError("User already exists", 400);
-    }
+    if (user) return user;
   }
 
   static async update(id: number, data: Partial<User>) {

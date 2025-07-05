@@ -19,7 +19,7 @@ export class EmailService {
     });
   }
 
-  public async sendEmail(email: string, subject: string, html: string = "") {
+  async sendEmail(email: string, subject: string, html: string = "") {
     await this.transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: email,
