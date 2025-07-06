@@ -20,7 +20,7 @@ model User {
   password          String
   role              UserRole    @default(USER)
   verified           Boolean     @default(false)
-  verficationToken String?
+  verificationToken String?
   resetPasswordToken String?
   resetPasswordExpires DateTime?
   createdAt         DateTime  @default(now())

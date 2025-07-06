@@ -9,6 +9,8 @@ import { AppError } from "../utils/AppError";
 import { TokenService } from "../services/TokenService";
 import { Auth } from "../factories/Auth";
 
+const ONE_DAY = 24 * 60 * 60 * 1000;
+
 export const signUp = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const data = ValidationService.validateSignUp(req.body, signUpSchema);
@@ -35,17 +37,15 @@ export const verifySignUp = asyncHandler(
     if (!token) throw new AppError("Token not present", 400);
 
     const authService = Auth.create();
-
-    const authToken = await authService.verifySignUp(token);
-    const oneDay = 24 * 60 * 60 * 1000;
+    const { token: authToken, user } = await authService.verifySignUp(token);
 
     res.cookie("job_connect_token", authToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: oneDay,
+      maxAge: ONE_DAY,
     });
 
-    res.status(200).json({ message: "Token varified successfully" });
+    res.status(200).json(user);
   }
 );
 
@@ -61,12 +61,11 @@ export const signIn = asyncHandler(
     if (isMatch) {
       const tokenService = new TokenService();
       const token = tokenService.generateToken(user.id);
-      const oneDay = 24 * 60 * 60 * 1000;
 
       res.cookie("job_connect_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: oneDay,
+        maxAge: ONE_DAY,
       });
     }
 
@@ -74,14 +73,36 @@ export const signIn = asyncHandler(
   }
 );
 
-export const signOut = (_req: Request, res: Response) => {
+export const signOut = asyncHandler((_req: Request, res: Response) => {
   res.clearCookie("job_connect_token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
   });
 
   res.status(200).json({ message: "Logged out successfully" });
-};
+});
+
+export const currentUser = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies.job_connect_token;
+
+    if (!token) {
+      res.status(200).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const tokenService = new TokenService();
+
+    const payload = tokenService.verifyToken(token);
+    if (!payload) {
+      res.status(200).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const user = await UserService.findById(payload.userId);
+    res.status(200).json(user);
+  }
+);
 
 export const sendResetPasswordLink = async (
   req: Request,

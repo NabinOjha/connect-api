@@ -23,7 +23,7 @@ class AuthService {
   async sendVerificationEmail(email: string, token: string) {
     try {
       const verifyUrl = this.urlService.generateVerificationUrl(token);
-      const html = await this.templateService.render("verificationEmail.ejs", {
+      const html = await this.templateService.render("verificationEmail", {
         verifyUrl,
         appName: process.env.APP_NAME || "Job Connect",
       });
@@ -44,11 +44,11 @@ class AuthService {
 
     const userId = payload.userId;
     const user = await UserService.findById(userId);
-    if (!user || user.verficationToken !== token)
+    if (!user || user.verificationToken !== token)
       throw new AppError("User does not exist.", 401);
 
     await UserService.update(userId, { verified: true });
-    return this.tokenService.generateToken(userId, "1d");
+    return { token, user };
   }
 }
 
